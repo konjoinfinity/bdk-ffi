@@ -45,7 +45,7 @@ val unconfirmedFirstThenByTimestampDescending =
 @ExperimentalUnsignedTypes
 fun main(args: Array<String>) {
     println("Configuring an in-memory wallet on electrum..")
-    val descriptor = "pkh(cSQPHDBwXGjVzWRqAHm6zfvQhaTuj1f2bFH58h55ghbjtFwvmeXR)"
+    val descriptor = "wpkh(tprv8ZgxMBicQKsPdYr8CVQR7pG1VLEQZ8rk9AZ6e1yhEGt6j8iMofaHdy2uvnjjrgSDf9sXwDaJMLeFsv4knkUbcRJNGThSQKasVYoa1Ao8FQX/*)"
     val amount = 1000uL
     val recipient = "tb1ql7w62elx9ucw4pj5lgw4l028hmuw80sndtntxt"
     val db = DatabaseConfig.Memory("")
