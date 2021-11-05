@@ -29,28 +29,21 @@ struct ReceiveView: View {
         return UIImage(systemName: "xmark.circle") ?? UIImage()
     }
     var address: String;
-    
     var body: some View {
-        BackgroundWrapper {
+        VStack {
             Spacer()
-            VStack {
             Image(uiImage: generateQRCode(from: "\(address)"))
                 .interpolation(.none)
                 .resizable()
                 .scaledToFit()
                 .frame(width: 200, height: 200)
-                Text(address).textStyle(BasicTextStyle(white: true))
-            }.contextMenu {
-                Button(action: {
-                    UIPasteboard.general.string = address}) {
-                        Text("Copy to clipboard")
-                    }
-            }
             Spacer()
-            BasicButton(action: {}, text: "Generate new address", color: "Green")
+            Text("your wallet receive address").padding(5)
+            Text(address).padding(10)
+            .font(.largeTitle)
+            Spacer()
         }
-        .navigationTitle("Receive Address")
-        .modifier(BackButtonMod())
+        .navigationBarTitle("Receive")
     }
 }
 
