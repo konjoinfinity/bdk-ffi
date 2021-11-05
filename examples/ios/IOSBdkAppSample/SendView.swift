@@ -7,18 +7,23 @@
 
 import SwiftUI
 import Combine
+import CodeScanner
 
 struct SendView: View {
-    
-    
-    
-    var onSend : (String, UInt64) -> ()
-    @Environment(\.presentationMode) var presentationMode
     @State var to: String = ""
     @State var amount: String = "0.000"
-    
-    
-    
+    @State private var isShowingScanner = false
+    @Environment(\.presentationMode) var presentationMode
+    func handleScan(result: Result<String, CodeScannerView.ScanError>) {
+       self.isShowingScanner = false
+        switch result {
+        case .success(let code):
+            self.to = code
+        case .failure(let error):
+            print(error)
+        }
+    }
+    var onSend : (String, UInt64) -> ()
     var body: some View {
         BackgroundWrapper {
             VStack {
@@ -50,7 +55,7 @@ struct SendView: View {
                 UITableView.appearance().backgroundColor = .clear }
                 
                 Spacer()
-                BasicButton(action: {}, text: "Scan Address")
+                BasicButton(action: { self.isShowingScanner = true}, text: "Scan Address")
                 BasicButton(action: {
                     onSend(to, UInt64((Double(amount) ?? 0) * Double(100000000)))
                     presentationMode.wrappedValue.dismiss()
@@ -59,6 +64,8 @@ struct SendView: View {
         }
         .navigationTitle("Send")
         .modifier(BackButtonMod())
+        .sheet(isPresented: $isShowingScanner) {
+                CodeScannerView(codeTypes: [.qr], simulatedData: "Testing1234", completion: self.handleScan)}
     }
 }
 
