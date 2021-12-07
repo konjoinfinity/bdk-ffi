@@ -40,7 +40,7 @@ struct ReceiveView: View {
                 .resizable()
                 .scaledToFit()
                 .frame(width: 200, height: 200)
-                Text(address).textStyle(BasicTextStyle(white: true))
+                Text(address).font(.system(size: 14)).textStyle(BasicTextStyle(white: true))
             }.contextMenu {
                 Button(action: {
                     UIPasteboard.general.string = address}) {

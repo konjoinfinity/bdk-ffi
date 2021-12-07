@@ -12,6 +12,9 @@ import CodeScanner
 struct SendView: View {
     @State var to: String = ""
     @State var amount: String = "0.000"
+    @State private var usd = 0.00
+    @State var btcusd: Double = 50500
+    @State private var usdamnt = 0
     @State private var isShowingScanner = false
     @Environment(\.presentationMode) var presentationMode
     func handleScan(result: Result<String, CodeScannerView.ScanError>) {
@@ -23,6 +26,11 @@ struct SendView: View {
             print(error)
         }
     }
+    let formatter: NumberFormatter = {
+            let formatter = NumberFormatter()
+            formatter.numberStyle = .decimal
+            return formatter
+        }()
     var onSend : (String, UInt64) -> ()
     var body: some View {
         BackgroundWrapper {
@@ -34,15 +42,29 @@ struct SendView: View {
                     TextField("Address", text: $to)
                         .modifier(BasicTextFieldStyle())
                 }
-                Section(header: Text("Amount (BTC)").textStyle(BasicTextStyle(white: true))) {
+                Section(header: Text("₿ Amount (BTC)").textStyle(BasicTextStyle(white: true))) {
                     TextField("Amount", text: $amount)
                         .modifier(BasicTextFieldStyle())
-                        .keyboardType(.numberPad)
+                        .keyboardType(.decimalPad)
                         .onReceive(Just(amount)) { newValue in
                             let filtered = newValue.filter { "0123456789.".contains($0) }
                             if filtered != newValue {
                                 self.amount = filtered
                             }
+//                            usd = self.amount
+                        }
+                }
+                Section(header: Text("$ Amount (USD)").textStyle(BasicTextStyle(white: true))) {
+                    TextField("$ Amount", value: $usd, formatter: formatter)
+                        .modifier(BasicTextFieldStyle())
+                        .keyboardType(.decimalPad)
+                        .onReceive(Just(String(usd))) { newValue in
+                            let filtered = newValue.filter { "0123456789.".contains($0) }
+                            if filtered != newValue {
+                                self.usd = (filtered as NSString).doubleValue
+                            }
+//                            amount = String(Int(usd / btcusd))
+//                            print(amount)
                         }
                 }
             }
