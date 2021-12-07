@@ -4,7 +4,6 @@
 //
 //  Created by Sudarsan Balaji on 29/10/21.
 //
-
 import SwiftUI
 import Combine
 
@@ -21,12 +20,36 @@ struct WalletView: View {
     @State private var goToTxs = false
     
     @State var balance: UInt64 = 0
+    @State var dollars: Double = 0.00
+    @State var btcprice: Double = 0
     @State var transactions: [Transaction] = []
     
     init() {
         UINavigationBar.appearance().largeTitleTextAttributes = [.font : UIFont.monospacedSystemFont(ofSize: 28, weight: .bold), .foregroundColor: UIColor.white]
         }
     func sync() {
+        struct Price: Codable {
+            let bitcoin: Bitcoin
+        }
+        struct Bitcoin: Codable {
+            let usd: Int
+        }
+        let url = URL(string: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")!
+        var request = URLRequest(url: url)
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        let task = URLSession.shared.dataTask(with: url) { data, response, error in
+            if let data = data {
+                if let price = try? JSONDecoder().decode(Price.self, from: data) {
+                    print(price.bitcoin.usd)
+                    btcprice = Double(price.bitcoin.usd)
+                } else {
+                    print("Invalid Response")
+                }
+            } else if let error = error {
+                print("HTTP Request Failed \(error)")
+            }
+        }
+        task.resume()
         switch viewModel.state {
         case .loaded(let wallet):
             do {
@@ -51,6 +74,10 @@ struct WalletView: View {
             }
         default: do { }
         }
+        print(Double(balance))
+        let prettybal = Double(balance) / Double(100000000)
+        print(Double(btcprice))
+        dollars = Double(prettybal) * Double(btcprice)
     }
     var body: some View {
         NavigationView {
@@ -76,8 +103,9 @@ struct WalletView: View {
                         NavigationLink(destination: SettingsView(), isActive: $goToIntro) { EmptyView() }
                     }
                     Spacer().frame(minHeight: 40)
-                    BalanceDisplay(balance: String(format: "%.8f", Double(balance) / Double(100000000))).padding(.leading, -10).padding(.trailing, -10)
-                    Spacer().frame(minHeight: 40)
+                                        BalanceDisplay(balance: String(format: "%.8f", Double(balance) / Double(100000000))).padding(.leading, -10).padding(.trailing, -10)
+                                        DollarsDisplay(dollars: String(format: "%.2f", Double(dollars))).padding(.leading, -10).padding(.trailing, -10)
+                                        Spacer().frame(minHeight: 10)
                     VStack() {
                         BasicButton(action: self.sync, text: "sync wallet").padding(.bottom, 10)
                         NavigationLink(destination: TransactionsView(transactions: transactions), isActive: $goToTxs) { EmptyView() }
