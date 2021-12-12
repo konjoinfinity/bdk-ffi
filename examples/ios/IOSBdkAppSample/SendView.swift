@@ -15,6 +15,8 @@ struct SendView: View {
     @State private var usd = 0.00
     @State var btcusd: Double = 50500
     @State private var usdamnt = 0
+    @State var btcprice: Double = 0.00
+    @State var usdsendamt: Double = 0.00
     @State private var isShowingScanner = false
     @Environment(\.presentationMode) var presentationMode
     func handleScan(result: Result<String, CodeScannerView.ScanError>) {
@@ -35,14 +37,12 @@ struct SendView: View {
     var body: some View {
         BackgroundWrapper {
             VStack {
-                
-            
             Form {
                 Section(header: Text("Recipient").textStyle(BasicTextStyle(white: true))) {
                     TextField("Address", text: $to)
                         .modifier(BasicTextFieldStyle())
                 }
-                Section(header: Text("₿ Amount (BTC)").textStyle(BasicTextStyle(white: true))) {
+                Section(header: Text("₿ Amount (BTC)"), footer:  Text("Amount USD: ~" + "$\(usdsendamt)").textStyle(BasicTextStyle(white: true))) {
                     TextField("Amount", text: $amount)
                         .modifier(BasicTextFieldStyle())
                         .keyboardType(.decimalPad)
@@ -51,20 +51,31 @@ struct SendView: View {
                             if filtered != newValue {
                                 self.amount = filtered
                             }
-//                            usd = self.amount
-                        }
-                }
-                Section(header: Text("$ Amount (USD)").textStyle(BasicTextStyle(white: true))) {
-                    TextField("$ Amount", value: $usd, formatter: formatter)
-                        .modifier(BasicTextFieldStyle())
-                        .keyboardType(.decimalPad)
-                        .onReceive(Just(String(usd))) { newValue in
-                            let filtered = newValue.filter { "0123456789.".contains($0) }
-                            if filtered != newValue {
-                                self.usd = (filtered as NSString).doubleValue
+                            struct Price: Codable {
+                                let bitcoin: Bitcoin
                             }
-//                            amount = String(Int(usd / btcusd))
-//                            print(amount)
+                            struct Bitcoin: Codable {
+                                let usd: Int
+                            }
+                            if btcprice == 0 {
+                            let url = URL(string: "https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd")!
+                            var request = URLRequest(url: url)
+                            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                            let task = URLSession.shared.dataTask(with: url) { data, response, error in
+                                if let data = data {
+                                    if let price = try? JSONDecoder().decode(Price.self, from: data) {
+                                        print(price.bitcoin.usd)
+                                        btcprice = Double(price.bitcoin.usd)
+                                    } else {
+                                        print("Invalid Response")
+                                    }
+                                } else if let error = error {
+                                    print("HTTP Request Failed \(error)")
+                                }
+                            }
+                            task.resume()
+                            }
+                            usdsendamt = (amount as NSString).doubleValue * btcprice
                         }
                 }
             }
