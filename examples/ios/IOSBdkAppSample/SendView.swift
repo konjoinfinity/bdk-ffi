@@ -43,7 +43,7 @@ struct SendView: View {
                     TextField("Address", text: $to)
                         .modifier(BasicTextFieldStyle())
                 }
-                Section(header: Text("₿ Amount (BTC)"), footer:  Text("Amount USD: ~" + "$\(usdsendamt)").textStyle(BasicTextStyle(white: true))) {
+                Section(header: Text("₿ Amount (BTC)"), footer:  Text("Amount USD: ~" + "$\(round(usdsendamt * 100) / 100.0)").textStyle(BasicTextStyle(white: true))) {
                     TextField("Amount", text: $amount)
                         .modifier(BasicTextFieldStyle())
                         .keyboardType(.decimalPad)
