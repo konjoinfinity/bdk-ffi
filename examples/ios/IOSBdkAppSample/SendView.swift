@@ -17,6 +17,7 @@ struct SendView: View {
     @State private var usdamnt = 0
     @State var btcprice: Double = 0.00
     @State var usdsendamt: Double = 0.00
+    @State private var keyboardOffset: CGFloat = 0
     @State private var isShowingScanner = false
     @Environment(\.presentationMode) var presentationMode
     func handleScan(result: Result<String, CodeScannerView.ScanError>) {
@@ -94,7 +95,7 @@ struct SendView: View {
         .modifier(BackButtonMod())
         .sheet(isPresented: $isShowingScanner) {
                 CodeScannerView(codeTypes: [.qr], simulatedData: "Testing1234", completion: self.handleScan)}
-    }
+        }
 }
 
 struct SendView_Previews: PreviewProvider {
